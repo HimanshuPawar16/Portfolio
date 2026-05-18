@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Portfolio</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #06060e;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.07);
+            --text-main: #f3f4f6;
+            --text-muted: #8e96a3;
+            --accent-glow: #6366f1;
+            --accent-secondary: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Background Glows */
+        .ambient-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(0,0,0,0) 70%);
+            top: -150px;
+            left: -150px;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .ambient-glow-2 {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, rgba(0,0,0,0) 70%);
+            bottom: -150px;
+            right: -150px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 6rem 1.5rem;
+        }
+
+        /* Modern Navigation Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 100px;
+            margin-top: 1.5rem;
+            margin-bottom: 3.5rem;
+        }
+        .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--text-main), var(--text-muted));
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+        nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* View Router Management */
+        .page-view {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .page-view.active-view {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Generic Glassmorphic Card Styling */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.03);
+        }
+        .card-header-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-glow), var(--accent-secondary));
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ================= PAGE 1: DASHBOARD BENTO GRID ================= */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            grid-auto-rows: minmax(160px, auto);
+        }
+        .hero-box { grid-column: span 2; grid-row: span 2; display: flex; flex-direction: column; justify-content: center; }
+        .hero-box h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+        .hero-box p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; max-width: 90%; }
+        
+        .stack-box { grid-column: span 1; grid-row: span 2; }
+        .mini-stack-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; height: 80%; }
+        .mini-stack-item { background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; }
+        .mini-stack-item i { font-size: 1.6rem; margin-bottom: 0.4rem; color: #fff; }
+
+        .featured-project-box { grid-column: span 2; }
+        .stat-box { grid-column: span 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .stat-num { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--text-muted)); background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-lbl { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .footer-cta { grid-column: span 3; display: flex; justify-content: space-between; align-items: center; }
+        .social-row { display: flex; gap: 1rem; }
+        .social-icon-btn { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: var(--text-main); text-decoration: none; transition: 0.3s; }
+        .social-icon-btn:hover { background: var(--text-main); color: var(--bg-color); }
+
+        /* ================= PAGE 2: PROJECTS ALLERGY ================= */
+        .page-title-block { margin-bottom: 2.5rem; }
+        .page-title-block h2 { font-size: 2.2rem; font-weight: 800; }
+        .page-title-block p { color: var(--text-muted); margin-top: 0.4rem; }
+        
+        .projects-showcase-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .showcase-card h3 { font-size: 1.3rem; margin-bottom: 0.6rem; }
+        .showcase-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; }
+        .tag-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .project-pill { background: rgba(255,255,255,0.04); padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; border: 1px solid var(--card-border); font-weight: 600; }
+        .arrow-link { position: absolute; bottom: 2rem; right: 2rem; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; transition: 0.3s; }
+        .showcase-card:hover .arrow-link { background: #fff; color: var(--bg-color); }
+
+        /* ================= PAGE 3: ABOUT & ARCHITECTURE ================= */
+        .about-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .profile-bio p { font-size: 1rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 1.2rem; }
+        
+        .timeline { margin-top: 1rem; position: relative; border-left: 1px solid var(--card-border); padding-left: 1.5rem; left: 5px; }
+        .timeline-item { position: relative; margin-bottom: 1.5rem; }
+        .timeline-item::before { content: ''; position: absolute; width: 9px; height: 9px; background: var(--accent-glow); border-radius: 50%; left: calc(-1.5rem - 5px); top: 6px; }
+        .time-epoch { font-size: 0.75rem; font-weight: 800; color: var(--accent-glow); margin-bottom: 0.2rem; }
+        .time-title { font-size: 0.95rem; font-weight: 600; }
+        .time-subtitle { font-size: 0.85rem; color: var(--text-muted); }
+
+        .skills-section h4 { font-size: 1rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-main); }
+        .skill-bar-wrapper { margin-bottom: 1.2rem; }
+        .skill-name-info { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem; font-weight: 600; }
+        .skill-track { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 100px; overflow: hidden; }
+        .skill-fill { height: 100%; background: linear-gradient(90deg, var(--accent-glow), var(--accent-secondary)); border-radius: 100px; width: 0%; transition: width 1.5s ease-in-out; }
+
+        /* Responsive Breakdowns */
+        @media (max-width: 900px) {
+            .bento-grid, .projects-showcase-grid, .about-layout { grid-template-columns: 1fr; }
+            .hero-box, .stack-box, .featured-project-box, .stat-box, .footer-cta { grid-column: span 1; }
+            header { flex-direction: column; gap: 1rem; border-radius: 24px; padding: 1.2rem; }
+            .footer-cta { flex-direction: column; gap: 1.5rem; text-align: center; }
+            .hero-box h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <!-- Global Unified Header Navigation -->
+        <header>
+            <div class="logo" onclick="switchPage('dashboard')">dev.portfolio</div>
+            <nav>
+                <span class="nav-link active" id="nav-dashboard" onclick="switchPage('dashboard')">Home</span>
+                <span class="nav-link" id="nav-projects" onclick="switchPage('projects')">Projects</span>
+                <span class="nav-link" id="nav-about" onclick="switchPage('about')">About</span>
+            </nav>
+        </header>
+
+        <!-- ================= PAGE 1: DASHBOARD VIEW ================= -->
+        <main id="view-dashboard" class="page-view active-view">
+            <div class="bento-grid">
+                <section class="card hero-box">
+                    <h1>Hi, I'm <span class="gradient-text">Himanshu</span>.<br>Building Enterprise Apps.</h1>
+                    <p>Scalable software systems. Focusing on robust backends, microservices, and modular UI engineering.</p>
+                </section>
+
+                <section class="card stack-box">
+                    <div class="card-header-title"><i class="fa-solid fa-layer-group"></i> Core Stack</div>
+                    <div class="mini-stack-grid">
+                        <div class="mini-stack-item"><i class="fa-brands fa-java" style="color:#e2433a"></i>Java</div>
+                        <div class="mini-stack-item"><i class="fa-solid fa-code" style="color:#00acd7"></i>Go</div>
+                        <div class="mini-stack-item"><i class="fa-brands fa-react" style="color:#00d8ff"></i>Next.js</div>
+                        <div class="mini-stack-item"><i class="fa-brands fa-linux" style="color:#f5ba22"></i>Linux</div>
+                    </div>
+                </section>
+
+                <section class="card featured-project-box">
+                    <div class="card-header-title"><i class="fa-solid fa-star"></i> Featured Open Source System</div>
+                    <h3>AlgoVisualizer Framework</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.4rem; margin-bottom: 1rem;">
+                        High-performance algorithmic computational dashboard rendering graph execution state layers dynamically.
+                    </p>
+                    <div class="tag-row">
+                        <span class="project-pill">Java</span>
+                        <span class="project-pill">Spring Boot</span>
+                        <span class="project-pill">Algorithms</span>
+                    </div>
+                    <span class="arrow-link" onclick="switchPage('projects')"><i class="fa-solid fa-arrow-right"></i></span>
+                </section>
+
+                <section class="card stat-box">
+                    <div class="stat-num">01</div>
+                    <div class="stat-lbl">Core Engineering Degree</div>
+                </section>
+
+                <section class="card footer-cta">
+                    <div>
+                        <h3>Let's collaborate on code bases.</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">Currently looking for production opportunities and open-source networks.</p>
+                    </div>
+                    <div class="social-row">
+                        <a href="#" class="social-icon-btn"><i class="fa-brands fa-github"></i></a>
+                        <a href="#" class="social-icon-btn"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon-btn"><i class="fa-regular fa-envelope"></i></a>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- ================= PAGE 2: PROJECTS GALLERY ================= -->
+        <main id="view-projects" class="page-view">
+            <div class="page-title-block">
+                <h2>Selected Production <span class="gradient-text">Architectures</span></h2>
+                <p>A compilation of computational tools, background applications, and algorithmic frameworks.</p>
+            </div>
+            
+            <div class="projects-showcase-grid">
+                <div class="card showcase-card">
+                    <div class="card-header-title"><i class="fa-solid fa-server"></i> Backend Engineering</div>
+                    <h3>Distributed Task Orchestrator</h3>
+                    <p>A resilient messaging broker interface written in Go executing highly parallel automated memory distribution routines over concurrent structures safely.</p>
+                    <div class="tag-row">
+                        <span class="project-pill">GoLang</span>
+                        <span class="project-pill">Concurrency</span>
+                        <span class="project-pill">Linux Engine</span>
+                    </div>
+                    <a href="#" class="arrow-link"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                </div>
+
+                <div class="card showcase-card">
+                    <div class="card-header-title"><i class="fa-solid fa-chart-line"></i> Computational Logic</div>
+                    <h3>AlgoVisualizer Engine</h3>
+                    <p>Interactive dashboard written in Spring Boot mapping complex graph nodes, dynamic memory steps, and shortest path tracking sequences in real-time execution blocks.</p>
+                    <div class="tag-row">
+                        <span class="project-pill">Java</span>
+                        <span class="project-pill">Spring Boot</span>
+                        <span class="project-pill">Next.js</span>
+                    </div>
+                    <a href="#" class="arrow-link"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                </div>
+
+                <div class="card showcase-card">
+                    <div class="card-header-title"><i class="fa-solid fa-microchip"></i> System Utilities</div>
+                    <h3>POSIX Hardware Profiler</h3>
+                    <p>A shell automation module mapping low level system information, processor layout architectures, and safe multi-drive memory deletion triggers cleanly inside Linux environments.</p>
+                    <div class="tag-row">
+                        <span class="project-pill">Bash Scripting</span>
+                        <span class="project-pill">Linux Mint Core</span>
+                        <span class="project-pill">Hardware Management</span>
+                    </div>
+                    <a href="#" class="arrow-link"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                </div>
+
+                <div class="card showcase-card">
+                    <div class="card-header-title"><i class="fa-solid fa-cubes"></i> Full-Stack Web</div>
+                    <h3>Reactive Analytics Terminal</h3>
+                    <p>Asynchronous state tracking UI engine utilizing component rendering layers to track microservice health structures alongside automated request counters.</p>
+                    <div class="tag-row">
+                        <span class="project-pill">Next.js</span>
+                        <span class="project-pill">TypeScript</span>
+                        <span class="project-pill">REST Protocol</span>
+                    </div>
+                    <a href="#" class="arrow-link"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                </div>
+            </div>
+        </main>
+
+        <!-- ================= PAGE 3: ABOUT & EXPERIENCE TIMELINE ================= -->
+        <main id="view-about" class="page-view">
+            <div class="page-title-block">
+                <h2>About the <span class="gradient-text">Engineer</span></h2>
+                <p>Synthesizing theoretical hardware fundamentals with low-overhead code frameworks.</p>
+            </div>
+
+            <div class="about-layout">
+                <section class="card profile-bio">
+                    <div class="card-header-title"><i class="fa-regular fa-user"></i> Professional Profile</div>
+                    <p>I focus on modern software stacks, specializing in structural performance and reliable system behaviors. My engineering background drives my systematic approach to debugging and architectural design.</p>
+                    <p>Operating natively in Linux desktop distributions, I enjoy optimizing developer environment parameters and building predictable backend microservices.</p>
+                    
+                    <div class="card-header-title" style="margin-top: 2rem;"><i class="fa-solid fa-graduation-cap"></i> Education Timeline</div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="time-epoch">2023 — Present</div>
+                            <div class="time-title">Computer Engineering</div>
+                            <div class="time-subtitle">Undergraduate Degree Specialization</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="time-epoch">Ongoing</div>
+                            <div class="time-title">Open Source Framework Initiatives</div>
+                            <div class="time-subtitle">Independent Systems Construction Research</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card skills-section">
+                    <div class="card-header-title"><i class="fa-solid fa-sliders"></i> Skill Matrix Levels</div>
+                    
+                    <h4>Backend & Systems Logic</h4>
+                    <div class="skill-bar-wrapper">
+                        <div class="skill-name-info"><span>Java / Spring Boot</span><span>85%</span></div>
+                        <div class="skill-track"><div class="skill-fill" data-percentage="85%"></div></div>
+                    </div>
+                    <div class="skill-bar-wrapper">
+                        <div class="skill-name-info"><span>GoLang Engine</span><span>70%</span></div>
+                        <div class="skill-track"><div class="skill-fill" data-percentage="70%"></div></div>
+                    </div>
+
+                    <h4 style="margin-top: 2rem;">Frontend Architectures</h4>
+                    <div class="skill-bar-wrapper">
+                        <div class="skill-name-info"><span>Next.js / React Layouts</span><span>75%</span></div>
+                        <div class="skill-track"><div class="skill-fill" data-percentage="75%"></div></div>
+                    </div>
+
+                    <h4 style="margin-top: 2rem;">Core Infrastructure</h4>
+                    <div class="skill-bar-wrapper">
+                        <div class="skill-name-info"><span>Linux Environment Systems & Shell</span><span>80%</span></div>
+                        <div class="skill-track"><div class="skill-fill" data-percentage="80%"></div></div>
+                    </div>
+                    <div class="skill-bar-wrapper">
+                        <div class="skill-name-info"><span>Data Structures & Graph Algorithms</span><span>75%</span></div>
+                        <div class="skill-track"><div class="skill-fill" data-percentage="75%"></div></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Background Particle Script and Router Functionality -->
+    <script>
+        // --- 1. SINGLE PAGE ROUTER LOGIC ---
+        function switchPage(pageId) {
+            // Update active state across all views
+            document.querySelectorAll('.page-view').forEach(view => {
+                view.classList.remove('active-view');
+            });
+            document.getElementById(`view-${pageId}`).classList.add('active-view');
+
+            // Synchronize active highlights across top navbar
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const selectedNavLink = document.getElementById(`nav-${pageId}`);
+            if (selectedNavLink) selectedNavLink.classList.add('active');
+
+            // Back-to-top scroll behavior on layout change
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Animate dynamic skills mapping meter bars if moving to About tab
+            if (pageId === 'about') {
+                setTimeout(() => {
+                    document.querySelectorAll('.skill-fill').forEach(bar => {
+                        bar.style.width = bar.getAttribute('data-percentage');
+                    });
+                }, 100);
+            } else {
+                // Reset bars when toggled away to keep entrance animation crisp
+                document.querySelectorAll('.skill-fill').forEach(bar => {
+                    bar.style.width = '0%';
+                });
+            }
+        }
+
+        // --- 2. CANVAS INTERACTIVE BACKGROUND NODES ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const numParticles = 40;
+        const particles = [];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.radius = Math.random() * 1.5 + 0.5;
+                this.vx = (Math.random() - 0.5) * 0.25;
+                this.vy = (Math.random() - 0.5) * 0.25;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 135) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(100, 102, 241, ${0.08 * (1 - dist/135)})`;
+                        ctx.lineWidth = 0.7;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
